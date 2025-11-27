@@ -181,7 +181,7 @@ export default function SellersLobby() {
         className="text-3xl font-bold text-center mb-8 py-2 rounded shadow-sm"
       >
         <span className="text-green-700 relative inline-block border-b-4 border-green-600 pb-1">
-          Seller Approval Dashboard
+          Farmer Approval Dashboard
         </span>
       </h3>
 
