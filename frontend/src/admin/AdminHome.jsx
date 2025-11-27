@@ -329,6 +329,7 @@ const InsightItem = ({ title, value, progress, color }) => (
         style={{ width: `${progress}%` }}
       ></div>
     </div>
+    
   </div>
 );
 
