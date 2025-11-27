@@ -20,7 +20,7 @@ import {
 } from 'recharts';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ErrorBoundary from './ErrorBoundary'; // Adjust path as needed
+import ErrorBoundary from './ErrorBoundary';
 
 const AdminHome = () => {
   const [dashboardData, setDashboardData] = useState({
@@ -31,11 +31,11 @@ const AdminHome = () => {
     recentActivity: [],
     performanceData: [],
   });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState('7days');
 
-  // Sample performance data (replace with API data)
   const samplePerformanceData = [
     { date: '2025-05-04', orders: 0, revenue: 0 },
     { date: '2025-05-05', orders: 0, revenue: 0 },
@@ -50,6 +50,7 @@ const AdminHome = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       setError(null);
+
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
@@ -69,18 +70,31 @@ const AdminHome = () => {
 
         const [farmersRes, buyersRes, productsRes, revenueRes] = responses;
 
+        console.log("Farmers Response:", farmersRes);
+        console.log("Buyers Response:", buyersRes);
+
+        // SAFE EXTRACTION
+        const safeNumber = (value) => {
+          if (typeof value === 'number') return value;
+          if (typeof value === 'string' && !isNaN(Number(value))) {
+            return Number(value);
+          }
+          return 0;
+        };
+
         setDashboardData({
-          totalSellers: farmersRes.totalFarmers || farmersRes.count || farmersRes || 0,
-          totalBuyers: buyersRes.totalBuyers || buyersRes.count || buyersRes || 0,
-          totalProducts: productsRes.totalProducts || productsRes.count || productsRes || 0,
-          totalRevenue: revenueRes.totalRevenue || revenueRes.revenue || revenueRes || 0,
-          recentActivity: [], // Add your activity data here
-          performanceData: samplePerformanceData, // Replace with API data
+          totalSellers: safeNumber(farmersRes.totalFarmers ?? farmersRes.count ?? farmersRes),
+          totalBuyers: safeNumber(buyersRes.totalBuyers ?? buyersRes.count ?? buyersRes),
+          totalProducts: safeNumber(productsRes.totalProducts ?? productsRes.count ?? productsRes),
+          totalRevenue: safeNumber(revenueRes.totalRevenue ?? revenueRes.revenue ?? revenueRes),
+          recentActivity: [],
+          performanceData: samplePerformanceData,
         });
+
       } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data. Please try again later.');
-        toast.error('Failed to load dashboard data', { position: 'top-center' });
+        console.error('Dashboard Fetch Error:', err);
+        setError('Failed to load dashboard data.');
+        toast.error('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -91,7 +105,6 @@ const AdminHome = () => {
 
   const handleTimeRangeChange = (range) => {
     setTimeRange(range);
-    // Fetch new data based on time range if needed
   };
 
   return (
@@ -104,9 +117,7 @@ const AdminHome = () => {
       <ToastContainer />
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-        <button
-          className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors flex items-center"
-        >
+        <button className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 flex items-center">
           <ChartBarIcon className="h-5 w-5 mr-2" />
           Export Report
         </button>
@@ -114,22 +125,18 @@ const AdminHome = () => {
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, index) => (
-            <div
-              key={index}
-              className="bg-white p-6 rounded-lg shadow-md animate-pulse"
-            >
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white p-6 rounded-lg shadow-md animate-pulse">
               <div className="h-6 w-24 bg-gray-200 rounded mb-4"></div>
               <div className="h-8 w-32 bg-gray-200 rounded"></div>
             </div>
           ))}
         </div>
       ) : error ? (
-        <div className="bg-red-100 text-red-700 p-4 rounded-lg">
-          {error}
-        </div>
+        <div className="bg-red-100 text-red-700 p-4 rounded-lg">{error}</div>
       ) : (
         <>
+          {/* DASHBOARD CARDS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <DashboardCard
               title="Total Farmers"
@@ -157,28 +164,29 @@ const AdminHome = () => {
             />
           </div>
 
+          {/* PERFORMANCE CHART */}
           <div className="mt-12">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">
-                Sales Performance
-              </h2>
+            <div className="flex justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">Sales Performance</h2>
+
               <div className="space-x-2">
                 <button
                   onClick={() => handleTimeRangeChange('7days')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium ${
                     timeRange === '7days'
                       ? 'bg-green-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      : 'bg-gray-200 text-gray-700'
                   }`}
                 >
                   Last 7 Days
                 </button>
+
                 <button
                   onClick={() => handleTimeRangeChange('12months')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium ${
                     timeRange === '12months'
                       ? 'bg-green-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      : 'bg-gray-200 text-gray-700'
                   }`}
                 >
                   Last 12 Months
@@ -192,50 +200,13 @@ const AdminHome = () => {
                   <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={dashboardData.performanceData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis
-                        dataKey="date"
-                        angle={-45}
-                        textAnchor="end"
-                        height={70}
-                        tickFormatter={(value) => {
-                          const date = new Date(value);
-                          return `${date.getDate()}/${date.getMonth() + 1}`;
-                        }}
-                      />
+                      <XAxis dataKey="date" angle={-45} textAnchor="end" height={70} />
                       <YAxis yAxisId="left" />
                       <YAxis yAxisId="right" orientation="right" />
-                      <Tooltip
-                        formatter={(value, name) =>
-                          name === 'revenue'
-                            ? `₹${value.toLocaleString('en-IN')}`
-                            : value
-                        }
-                        labelFormatter={(label) => {
-                          const date = new Date(label);
-                          return date.toLocaleDateString('en-IN', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          });
-                        }}
-                      />
+                      <Tooltip />
                       <Legend />
-                      <Line
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="orders"
-                        name="Orders"
-                        stroke="#3B82F6"
-                        strokeWidth={2}
-                      />
-                      <Line
-                        yAxisId="right"
-                        type="monotone"
-                        dataKey="revenue"
-                        name="Revenue (₹)"
-                        stroke="#F59E0B"
-                        strokeWidth={2}
-                      />
+                      <Line yAxisId="left" type="monotone" dataKey="orders" stroke="#3B82F6" strokeWidth={2} />
+                      <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#F59E0B" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -247,34 +218,18 @@ const AdminHome = () => {
             </ErrorBoundary>
           </div>
 
+          {/* ANALYTICS */}
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Recent Activity
-              </h2>
-              {dashboardData.recentActivity.length > 0 ? (
-                <div className="space-y-4">
-                  {dashboardData.recentActivity.map((activity, index) => (
-                    <div key={index}>
-                      <p className="text-gray-700">{activity.description}</p>
-                      <p className="text-sm text-gray-500">{activity.time}</p>
-                      {index < dashboardData.recentActivity.length - 1 && (
-                        <hr className="my-2 border-gray-200" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="h-64 flex items-center justify-center bg-gray-100 rounded-lg">
-                  <p className="text-gray-500">No recent activity to display</p>
-                </div>
-              )}
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
+              <div className="h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+                <p className="text-gray-500">No recent activity to display</p>
+              </div>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Analytics & Insights
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Analytics & Insights</h2>
+
               <div className="space-y-6">
                 <InsightItem
                   title="Farmers to Buyers Ratio"
@@ -293,6 +248,7 @@ const AdminHome = () => {
                   }
                   color="bg-green-600"
                 />
+
                 <InsightItem
                   title="Products per Farmer"
                   value={
@@ -303,14 +259,14 @@ const AdminHome = () => {
                   progress={
                     dashboardData.totalSellers > 0
                       ? Math.min(
-                          (dashboardData.totalProducts / dashboardData.totalSellers / 10) *
-                            100,
+                          (dashboardData.totalProducts / dashboardData.totalSellers / 10) * 100,
                           100
                         )
                       : 0
                   }
                   color="bg-indigo-600"
                 />
+
                 <InsightItem
                   title="Average Revenue per Product"
                   value={`₹${
@@ -321,14 +277,14 @@ const AdminHome = () => {
                   progress={
                     dashboardData.totalProducts > 0
                       ? Math.min(
-                          (dashboardData.totalRevenue / dashboardData.totalProducts / 1000) *
-                            100,
+                          (dashboardData.totalRevenue / dashboardData.totalProducts / 1000) * 100,
                           100
                         )
                       : 0
                   }
                   color="bg-red-600"
                 />
+
                 <InsightItem
                   title="Platform Growth Rate"
                   value="12.5%"
@@ -344,36 +300,23 @@ const AdminHome = () => {
   );
 };
 
+// CARD COMPONENT
 const DashboardCard = ({ title, value, icon, trend }) => (
   <motion.div
     className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4"
     whileHover={{ y: -5 }}
     transition={{ duration: 0.2 }}
   >
-    <div className="flex-shrink-0">{icon}</div>
+    <div>{icon}</div>
     <div>
       <h3 className="text-lg font-medium text-gray-700">{title}</h3>
       <p className="text-2xl font-bold text-gray-900">{value}</p>
-      <p className="text-sm text-green-600 flex items-center mt-1">
-        <svg
-          className="h-4 w-4 mr-1"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-          />
-        </svg>
-        {trend}
-      </p>
+      <p className="text-sm text-green-600 flex items-center mt-1">{trend}</p>
     </div>
   </motion.div>
 );
 
+// INSIGHT COMPONENT
 const InsightItem = ({ title, value, progress, color }) => (
   <div>
     <div className="flex justify-between mb-1">
@@ -388,8 +331,5 @@ const InsightItem = ({ title, value, progress, color }) => (
     </div>
   </div>
 );
-
-// Note: Chrome's third-party cookie warning is a browser-level message and doesn't require code changes.
-// Ensure your app doesn't rely on third-party cookies for critical functionality.
 
 export default AdminHome;
