@@ -122,8 +122,8 @@ export default function ViewSellers() {
         ref={tableRef}
       >
         <div className="bg-green-600 px-6 py-4">
-          <h4 className="text-xl font-semibold text-white">All Registered Sellers</h4>
-          <p className="text-green-100 text-sm">Manage seller accounts</p>
+          <h4 className="text-xl font-semibold text-white">All Registered Farmers</h4>
+          <p className="text-green-100 text-sm">Manage farmer accounts</p>
         </div>
         
         <div className="overflow-x-auto">

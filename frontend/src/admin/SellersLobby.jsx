@@ -198,8 +198,8 @@ export default function SellersLobby() {
         ref={tableRef}
       >
         <div className="bg-green-600 px-6 py-4">
-          <h4 className="text-xl font-semibold text-white">Seller Application Requests</h4>
-          <p className="text-green-100 text-sm">Approve or reject seller account applications</p>
+          <h4 className="text-xl font-semibold text-white">Farmer Application Requests</h4>
+          <p className="text-green-100 text-sm">Approve or reject farmer account applications</p>
         </div>
         
         <div className="overflow-x-auto">
