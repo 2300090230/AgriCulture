@@ -75,10 +75,29 @@ const AdminHome = () => {
 
         // SAFE EXTRACTION
         const safeNumber = (value) => {
-          if (typeof value === 'number') return value;
-          if (typeof value === 'string' && !isNaN(Number(value))) {
-            return Number(value);
+          // Handle null or undefined
+          if (value == null) return 0;
+          
+          // If it's already a number, return it
+          if (typeof value === 'number' && !isNaN(value)) return value;
+          
+          // If it's a string, try to parse it
+          if (typeof value === 'string') {
+            const parsed = Number(value);
+            return isNaN(parsed) ? 0 : parsed;
           }
+          
+          // If it's an object, try to extract a numeric property
+          if (typeof value === 'object') {
+            // Try common property names
+            const possibleValue = value.totalFarmers || value.totalBuyers || 
+                                  value.totalProducts || value.totalRevenue || 
+                                  value.count || value.total || value.value;
+            if (possibleValue != null) {
+              return safeNumber(possibleValue);
+            }
+          }
+          
           return 0;
         };
 
@@ -301,20 +320,33 @@ const AdminHome = () => {
 };
 
 // CARD COMPONENT
-const DashboardCard = ({ title, value, icon, trend }) => (
-  <motion.div
-    className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4"
-    whileHover={{ y: -5 }}
-    transition={{ duration: 0.2 }}
-  >
-    <div>{icon}</div>
-    <div>
-      <h3 className="text-lg font-medium text-gray-700">{title}</h3>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-      <p className="text-sm text-green-600 flex items-center mt-1">{trend}</p>
-    </div>
-  </motion.div>
-);
+const DashboardCard = ({ title, value, icon, trend }) => {
+  // Safely convert value to string for rendering
+  const displayValue = React.useMemo(() => {
+    if (value == null) return '0';
+    if (typeof value === 'object') {
+      // If it's an object, try to extract a value or stringify it
+      console.warn('DashboardCard received object as value:', value);
+      return '0';
+    }
+    return String(value);
+  }, [value]);
+
+  return (
+    <motion.div
+      className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4"
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div>{icon}</div>
+      <div>
+        <h3 className="text-lg font-medium text-gray-700">{title}</h3>
+        <p className="text-2xl font-bold text-gray-900">{displayValue}</p>
+        <p className="text-sm text-green-600 flex items-center mt-1">{trend}</p>
+      </div>
+    </motion.div>
+  );
+};
 
 // INSIGHT COMPONENT
 const InsightItem = ({ title, value, progress, color }) => (
