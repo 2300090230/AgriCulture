@@ -32,7 +32,7 @@ jobs:
           context: ./SDPProject
           file: ./SDPProject/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/agri-backend:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/agri-backend1:latest
 
       # Step 5 — Build & Push Frontend Image
       - name: Build and Push Frontend Image
@@ -41,4 +41,4 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/agri-frontend:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/agri-frontend1:latest
